@@ -197,6 +197,22 @@ if __name__ == "__main__":
     sys.stdout = Tee(original_stdout, log_file)
 
     from auto_bug_fix.bug_fix_config import claude_config, bug_fix_config
+    from auto_bug_fix.gateway import check_fix_needed
+
+    # Step 0: Gateway — check if fix is already present before spending any tokens.
+    if bug_fix_config.fix_signatures:
+        needs_fix = check_fix_needed(
+            repo_path=bug_fix_config.repo_path,
+            fix_signatures=bug_fix_config.fix_signatures,
+            target_branches=[bug_fix_config.target_branch],
+        )
+        if not needs_fix:
+            print(
+                f"\nGATEWAY: Fix already present in '{bug_fix_config.target_branch}'. "
+                "Bug fix not needed. Exiting."
+            )
+            sys.exit(0)
+        print(f"\nGATEWAY: Fix missing in '{bug_fix_config.target_branch}'. Proceeding with pipeline.\n")
 
     start_time = time.time()
     asyncio.run(claude_run(claude_config, gen_prompts(claude_config, bug_fix_config)))

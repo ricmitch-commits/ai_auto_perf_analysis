@@ -754,16 +754,16 @@ The goal of this task is to autonomously drive a build-test-fix loop until both 
     - Use all available CPUs (the command already specifies this).
     - If the build succeeds, proceed to running the tests.
     - If the build fails:
-        - Inspect the compiler/linker output carefully to identify the root cause.
-        - Apply a targeted fix to the source code.
+        - Inspect the compiler/linker output carefully to identify ALL errors — collect every error before making any fix.
+        - Apply a single targeted fix that addresses ALL build errors at once. Do not fix one error and rebuild prematurely.
         - Do NOT do a full clean rebuild unless the error is explicitly caused by a stale artifact. Never do a speculative clean rebuild.
         - Retry the build.
 - On a successful build, run <test_command> from <build_dir>.
     - If all tests pass, the loop is complete. Report success.
     - If tests fail:
-        - Inspect the test output carefully.
-        - Identify the root cause — may be in the fix code or in the ported tests.
-        - Apply a targeted fix.
+        - Collect the COMPLETE list of all failing tests before making any fix. Do not stop at the first failure.
+        - Analyze all failures together — identify root causes across all failing tests as a batch.
+        - Apply a single fix pass that addresses ALL failures at once. This is more efficient than fixing one test at a time.
         - Recompile using <build_command> (incremental).
         - Rerun <test_command>.
 - Count each complete build+test attempt as one retry. Repeat until clean or <max_build_test_retries> is exhausted.
